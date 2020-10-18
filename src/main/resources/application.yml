@@ -1,0 +1,18 @@
+micronaut:
+  application:
+    name: candystats
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/candystats
+    driverClassName: org.postgresql.Driver
+    username: frankie
+    password: ha11oween
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+        show_sql: true
+    packages-to-scan:
+      - 'com.candystats'

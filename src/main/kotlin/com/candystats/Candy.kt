@@ -22,7 +22,13 @@ data class Candy(
     val fat: Double,
     val protein: Double,
     val calories: Int
-)
+): Totalable, Filterable<Candy> {
+    override fun totals(): Totals = Totals(sugar, fat, protein, calories)
+    override fun filterBy(candyKind: CandyKind?): Candy? {
+        return if (candyKind == null || candyKind == kind) this
+        else null
+    }
+}
 
 enum class CandyKind {
     CHOCOLATE,

@@ -14,28 +14,11 @@ class CandyStatsController(
 ) {
     @Get("/totals")
     fun totals(@QueryValue boxIds: List<Long>, @QueryValue(defaultValue = "") candyIds: List<Long>, @QueryValue(defaultValue = "") kind: CandyKind?): HttpResponse<Any> {
-        val boxes = boxIds.map { boxRepository.findById(it).get() }
-        val candies = candyIds.map { candyRepository.findById(it).get() }
+        val boxes = boxIds.map { boxRepository.findById(it).get() }.toSet()
+        val candies = candyIds.map { candyRepository.findById(it).get() }.toSet()
         return HttpResponse.ok(TotalsResponse(
-            totals = candies.fold(boxes.fold(Totals(0.0, 0.0, 0.0, 0)) { innerTotals, innerBox ->
-                innerTotals + countTotalsInBox(innerBox, kind)
-            }) { totals, candy ->
-                totals + candy
-            }
+            totals = Box(innerBoxes = boxes, candies = candies).filterBy(kind)!!.totals()
         ))
-    }
-
-    private fun countTotalsInBox(box: Box, kind: CandyKind?): Totals {
-        val totals = box.candies.fold(Totals(0.0, 0.0, 0.0, 0)) { totals, candy ->
-            if (kind == null || candy.kind == kind) {
-                totals + candy
-            } else {
-                totals
-            }
-        }
-        return box.innerBoxes.fold(totals) { innerTotals, innerBox ->
-            innerTotals + countTotalsInBox(innerBox, kind)
-        }
     }
 }
 
@@ -63,6 +46,8 @@ data class Totals(
         )
     }
 }
+
+val ZeroTotals = Totals(0.0, 0.0, 0.0, 0)
 
 @Introspected
 data class TotalsResponse(

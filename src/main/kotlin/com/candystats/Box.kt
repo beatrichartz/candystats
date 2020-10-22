@@ -23,7 +23,18 @@ class Box(
     var innerBoxes: Set<Box> = emptySet(),
     @OneToMany(mappedBy = "box", fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     var candies: Set<Candy> = emptySet()
-) {
+) : Totalable, Filterable<Box> {
+    override fun totals(): Totals {
+        return (innerBoxes + candies).fold(ZeroTotals) { totals, candy ->
+            totals + candy.totals()
+        }
+    }
+
+    override fun filterBy(candyKind: CandyKind?): Box? {
+        candies = candies.mapNotNull { it.filterBy(candyKind) }.toSet()
+        innerBoxes = innerBoxes.mapNotNull { it.filterBy(candyKind) }.toSet()
+        return this
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
